@@ -53,6 +53,7 @@ class TestModuleHelper(object):
 
         """
         self.log.info("setup_module: for <%s>" % module)
+
         from evasion.common import net
         from evasion.messenger import hub
 
