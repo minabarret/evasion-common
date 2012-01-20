@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 :mod:`net` -- This provides handy utiliy functions for network services.
 ==============================================================================
@@ -17,8 +18,6 @@ will retry for by default.
 .. autofunction:: evasion.common.net.wait_for_service
 
 .. autofunction:: evasion.common.net.wait_for_ready
-
-
 
 """
 import time
