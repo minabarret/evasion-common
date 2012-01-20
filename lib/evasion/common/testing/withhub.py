@@ -19,7 +19,7 @@ class TestModuleHelper(object):
         which nosetests will pickup.
 
         """
-        m = "evasion.common.testing.withhub.HubTestModuleHelper"
+        m = "evasion.common.testing.withhub.TestModuleHelper"
         self.log = logging.getLogger(m)
         self.config = {}
         self.broker = None
