@@ -14,6 +14,10 @@
 import threading
 
 
+class WaitTimeout(Exception):
+    """Raised by CallBack.wait if it timeout before receiving a call."""
+
+
 class CallBack(object):
     """Helpful message catcher to allow testing of asynchronous messages.
 
@@ -29,7 +33,7 @@ class CallBack(object):
         """Wait for self.timeout seconds or raise ValueError on timeout."""
         self.waiter.wait(self.timeout)
         if not self.data:
-            raise ValueError("The callback never called before timeout.")
+            raise WaitTimeout("The callback never called before timeout.")
         # reset for next run:
         self.waiter.clear()
 
