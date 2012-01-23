@@ -18,6 +18,8 @@ class CommonTC(unittest.TestCase):
         self.assertRaises(signal.WaitTimeout, c.wait)
         self.assertEquals(c.data, None)
 
+        # Test the timeout doesn't occur when the callback
+        # is invoked.
         c(1)
         c.wait()
         self.assertEquals(c.data, 1)
