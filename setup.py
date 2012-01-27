@@ -10,7 +10,7 @@ Version='1.0.1'
 Author='Oisin Mulvihill'
 AuthorEmail='oisinmulvihill at gmail dot com'
 Maintainer=' Oisin Mulvihill'
-Summary='Helper functions collected together from other evasion modules to aid reuse.'
+Summary='Helper functions collected together from other evasion modules to aid reuse such as get_free_port() and wait_for_ready().'
 License='Evasion Project CDDL License'
 ShortDescription=Summary
 
