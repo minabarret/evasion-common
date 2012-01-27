@@ -5,7 +5,7 @@ Oisin Mulvihill
 from setuptools import setup, find_packages
 
 Name='evasion-common'
-ProjectUrl="" #http://github.com/oisinmulvihill/evasion-messenger/tarball/master#egg=evasion_messenger"
+ProjectUrl="http://github.com/oisinmulvihill/evasion-common/tarball/master#egg=evasion_common"
 Version='1.0.0'
 Author='Oisin Mulvihill'
 AuthorEmail='oisinmulvihill at gmail dot com'
@@ -47,6 +47,8 @@ setup(
     install_requires=needed,
     setup_requires=[
       'nose>=1.0.0',
+      'web.py',
+      'coverage'
     ],
     test_suite="nose.collector",
     entry_points=EntryPoints,

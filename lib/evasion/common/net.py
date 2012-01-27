@@ -40,7 +40,24 @@ class NoFreePort(Exception):
     """Raised when get_free_port was unable to find a free port to use."""
 
 
-def get_free_port(exclude_ports=[], retries=PORT_RETRIES):
+def free_port_range(start=2000, stop=10000):
+    """Used by get_free_port() to generate a random TCP port to test.
+
+    :param start: The start of the TCP port range (default: 2000).
+
+    :param stop: The stop of the TCP port range (default: 10000).
+
+    :returns: A random int in the range(start, stop)
+
+    """
+    return random.randint(start, stop)
+
+
+class NoFreePort(Exception):
+    """Raised by get_free_port when no available TCP port could be found."""
+
+
+def get_free_port(exclude_ports=[], retries=PORT_RETRIES, fp=free_port_range):
     """Called to return a free TCP port that we can use.
 
     This function gets a random port between 2000 - 10000.
@@ -54,35 +71,52 @@ def get_free_port(exclude_ports=[], retries=PORT_RETRIES):
     :param retries: The amount of attempts to try finding
     a free port.
 
+    :param fp: The free port range number generator.
+
+    This returns a TCP port number.
+
     :returns: The free port number to use.
 
     """
-    def fp():
-        return random.randint(2000, 10000)
-
+    log = get_log()
+    returned = 0
     free_port = 0
+
     while retries:
         retries -= 1
         free_port = fp()
-        while free_port in exclude_ports:
+
+        # Get a port thats not in the exclude list
+        exclude_retries = len(exclude_ports)
+        while not exclude_retries:
             free_port = fp()
+            if free_port in exclude_ports:
+                exclude_retries -= 1
+            else:
+                break
+
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             s.bind(('', free_port))
-            try:
-                s.close()
-            except:
-                pass
+            s.close()
+
         except socket.error:
             # port not free, retry.
-            get_log().info("getFreePort: port not free %s, retrying with another port." % free_port)
+            log.info(
+                "getFreePort: port not free %s, retrying with another port." % (
+                free_port
+            ))
 
-    if not free_port:
+        else:
+            returned = free_port
+
+    if not returned:
+        # Retries finished and no free port was found:
         raise NoFreePort("I can't get a free port after retrying!")
 
-    get_log().info("getFreePort: Free Port %s." % free_port)
+    log.info("getFreePort: Free Port %s." % returned)
 
-    return free_port
+    return returned
 
 
 def wait_for_service(host, port, retries=0, retry_period=5.0):
@@ -107,6 +141,7 @@ def wait_for_service(host, port, retries=0, retry_period=5.0):
         Failed: failed to connect after maximum retries.
 
     """
+    log = get_log()
     returned = False
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     retries = int(retries)
@@ -115,13 +150,20 @@ def wait_for_service(host, port, retries=0, retry_period=5.0):
     def check():
         returned = False
         try:
+            log.debug("wait_for_service: connecting to host<%s> port<%s>"% (
+                host,
+                port
+            ))
             s.connect((host, port))
         except socket.error:
             pass # not ready yet.
         else:
+            log.debug("wait_for_service: Success! Connected to <%s:%s>"% (
+                host,
+                port
+            ))
             returned = True
-# not py24 friendly:
-#        finally:
+
         try:
             s.close()
         except:
@@ -132,8 +174,11 @@ def wait_for_service(host, port, retries=0, retry_period=5.0):
     if not retries:
         # Keep connecting until its present:
         while True:
-            returned = check()
             time.sleep(retry_period)
+            is_connected = check()
+            if is_connected:
+                returned = is_connected
+                break
     else:
         # Give up after 'retries' attempts:
         for i in range(0, retries):
@@ -148,8 +193,7 @@ def wait_for_service(host, port, retries=0, retry_period=5.0):
 
 
 def wait_for_ready(uri, retries=PORT_RETRIES):
-    """Called to wait for a web application to respond to
-    normal requests.
+    """Called to wait for a web application to respond to normal requests.
 
     This function will attempt a HEAD request if its
     supported, otherwise it will use GET.
@@ -171,7 +215,6 @@ def wait_for_ready(uri, retries=PORT_RETRIES):
     conn = httplib.HTTPConnection(o.hostname, o.port)
 
     while retries:
-        #get_log().debug("wait_for_ready: (reties left:%d) check if we can get <%s>." % (retries, URI))
         retries -= 1
         try:
             # Just get the headers and not the body to speed things up.
@@ -197,6 +240,10 @@ def wait_for_ready(uri, retries=PORT_RETRIES):
                     # success, its ready.
                     returned = True
                     break;
+
+        except httplib.CannotSendRequest:
+            # Not ready yet.
+            pass
 
         except socket.error:
             # Not ready yet. I should check the exception to
