@@ -47,7 +47,6 @@ setup(
     install_requires=needed,
     setup_requires=[
       'nose>=1.0.0',
-      'web.py',
       'coverage'
     ],
     test_suite="nose.collector",
