@@ -6,14 +6,20 @@ from setuptools import setup, find_packages
 
 Name='evasion-common'
 ProjectUrl="http://github.com/oisinmulvihill/evasion-common/tarball/master#egg=evasion_common"
-Version='1.0.0'
+Version='1.0.1'
 Author='Oisin Mulvihill'
 AuthorEmail='oisinmulvihill at gmail dot com'
 Maintainer=' Oisin Mulvihill'
 Summary='Helper functions collected together from other evasion modules to aid reuse.'
 License='Evasion Project CDDL License'
 ShortDescription=Summary
-Description=Summary
+
+try:
+    fd = open("README.rst","r")
+    Description = fd.read()
+    fd.close()
+except IOError:
+    Description=Summary
 
 
 needed = [
@@ -32,6 +38,7 @@ PackageData = {
 
 EntryPoints = """
 """
+
 
 setup(
     url=ProjectUrl,
