@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 Name='evasion-common'
 ProjectUrl="http://github.com/oisinmulvihill/evasion-common/tarball/master#egg=evasion_common"
-Version='1.0.1'
+Version='1.0.2'
 Author='Oisin Mulvihill'
 AuthorEmail='oisinmulvihill at gmail dot com'
 Maintainer=' Oisin Mulvihill'
