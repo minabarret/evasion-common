@@ -103,9 +103,13 @@ def get_free_port(exclude_ports=[], retries=PORT_RETRIES, fp=free_port_range):
         except socket.error:
             # port not free, retry.
             log.info(
-                "getFreePort: port not free %s, retrying with another port." % (
-                free_port
-            ))
+                (
+                    "getFreePort: port not free '{}', "
+                    "retrying with another port."
+                ).format(
+                    free_port
+                )
+            )
 
         else:
             returned = free_port
@@ -120,7 +124,7 @@ def get_free_port(exclude_ports=[], retries=PORT_RETRIES, fp=free_port_range):
 
 
 def wait_for_service(host, port, retries=0, retry_period=5.0):
-    """Called to wait until a socket connection can be made to a remote service.
+    """Called to wait for a socket connection can be made to a remote service.
 
     :param host: IP/DNS of the service to connect to.
 
@@ -150,18 +154,23 @@ def wait_for_service(host, port, retries=0, retry_period=5.0):
     def check():
         returned = False
         try:
-            log.debug("wait_for_service: connecting to host<%s> port<%s>"% (
-                host,
-                port
-            ))
+            log.debug(
+                "wait_for_service: connecting to host<{}> port<{}>".format(
+                    host,
+                    port
+                )
+            )
             s.connect((host, port))
         except socket.error:
-            pass # not ready yet.
+            # not ready yet.
+            pass
         else:
-            log.debug("wait_for_service: Success! Connected to <%s:%s>"% (
-                host,
-                port
-            ))
+            log.debug(
+                "wait_for_service: Success! Connected to <{}:{}>".format(
+                    host,
+                    port
+                )
+            )
             returned = True
 
         try:
@@ -192,7 +201,7 @@ def wait_for_service(host, port, retries=0, retry_period=5.0):
     return returned
 
 
-def wait_for_ready(uri, retries=PORT_RETRIES):
+def wait_for_ready(uri, retries=PORT_RETRIES, wait_period=0.5, timeout=1.0):
     """Called to wait for a web application to respond to normal requests.
 
     This function will attempt a HEAD request if its
@@ -204,6 +213,10 @@ def wait_for_ready(uri, retries=PORT_RETRIES):
     :param retries: The amount of attempts to try finding
     a free port.
 
+    :param wait_period: The seconds to wait before attempting connection.
+
+    :param timeout: The socket timeout to prevent blocking.
+
     :returns: True: the web app ready.
 
     """
@@ -212,18 +225,18 @@ def wait_for_ready(uri, retries=PORT_RETRIES):
     URI = uri
     # Work set up the connection for the HEAD request:
     o = urlparse.urlsplit(URI)
-    conn = httplib.HTTPConnection(o.hostname, o.port)
+    conn = httplib.HTTPConnection(o.hostname, o.port, timeout=timeout)
 
     while retries:
         retries -= 1
         try:
             # Just get the headers and not the body to speed things up.
-            conn.request("HEAD",'/')
+            conn.request("HEAD", '/')
             res = conn.getresponse()
             if res.status == httplib.OK:
                 # success, its ready.
                 returned = True
-                break;
+                break
 
             elif res.status == httplib.NOT_IMPLEMENTED:
                 # HEAD not supported try a GET instead:
@@ -239,7 +252,7 @@ def wait_for_ready(uri, retries=PORT_RETRIES):
                 else:
                     # success, its ready.
                     returned = True
-                    break;
+                    break
 
         except httplib.CannotSendRequest:
             # Not ready yet.
@@ -253,6 +266,6 @@ def wait_for_ready(uri, retries=PORT_RETRIES):
             # the sand" approach.
             pass
 
-        time.sleep(0.8)
+        time.sleep(wait_period)
 
     return returned
