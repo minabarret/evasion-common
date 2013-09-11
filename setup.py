@@ -52,7 +52,7 @@ setup(
     license=License,
     scripts=ProjectScripts,
     install_requires=needed,
-    test_requires=[
+    tests_require=[
       'nose',
       'coverage'
     ],
