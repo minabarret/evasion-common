@@ -25,8 +25,14 @@ import socket
 import urllib
 import random
 import logging
-import httplib
-import urlparse
+try:
+    # Python2
+    import httplib
+    import urlparse
+except ImportError:
+    # Python3
+    import http.client
+    from urllib.parse import urlparse
 
 
 def get_log():
